@@ -1,0 +1,12 @@
+name: my-shiny
+title: my-shiny
+username:
+account: lizredford
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 311151
+bundleId: 1436077
+url: https://lizredford.shinyapps.io/my-shiny/
+when: 1529359691.81025
+asMultiple: FALSE
+asStatic: FALSE
