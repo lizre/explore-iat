@@ -144,6 +144,7 @@ body <- dashboardBody(
 )
 )
 
+# UI #####
 ui <- dashboardPage(
   dashboardHeader(title = "Explore the data: Implicit Association Test", 
                   titleWidth = 450
@@ -151,6 +152,8 @@ ui <- dashboardPage(
   customsidebar,
   body
 )
+
+# Server #####
 
 server <- function(input, output) {
  
