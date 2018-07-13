@@ -1,0 +1,12 @@
+name: explore-iat
+title: explore-iat
+username:
+account: lizredford
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 380450
+bundleId: 1479344
+url: https://lizredford.shinyapps.io/explore-iat/
+when: 1531501024.75468
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,136 +1,187 @@
 library(shiny)
+library(rsconnect)
 library(shinydashboard)
-library(DT)
-library(dplyr)
 library(here)
-here::here()
 
+# Import and set up data #####
 library(haven)
-dat <- read_spss("/Users/lizredford/Downloads/Shiny/explore-raceiat/raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
+library(dplyr)
+raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
 
-dat$Preference <- cut(dat$Implicit, 
+# Break data into discrete categories for coloring-by in histogram.
+raceiatdat$Preference <- cut(raceiatdat$Implicit, 
     breaks = c(-Inf, -.15, .15, Inf), 
     labels = c("Pro-Black Preference", 
                "No Preference", 
                "Pro-White Preference"), 
     right = FALSE)
 
-dat$raceomb <- as.factor(dat$raceomb)
-dat$raceomb <- recode(dat$raceomb, 
+raceiatdat$raceomb <- as.factor(raceiatdat$raceomb)
+raceiatdat$raceomb <- recode(raceiatdat$raceomb, 
                       "5" = "Black",
                       "6" = "White") 
 
-dat$sex <- as.factor(dat$sex)
-dat$raceomb <- as.factor(dat$raceomb)
+# Coerce to factors for ggplot
+raceiatdat$sex <- as.factor(raceiatdat$sex)
+raceiatdat$raceomb <- as.factor(raceiatdat$raceomb)
 
-# Define UI for app that draws a histogram ----
-ui <- fluidPage(
+# Change variable names to nice ones; they are displayed as-in-dataset in correlation output.
+raceiatdat <- rename(raceiatdat, 
+                     politics = politicalid,
+                     gender = sex,
+                     race = raceomb,
+                     explicit = Explicit)
 
-  # App title ----
-  titlePanel(tags$h1("Explore the data: implicit racial preferences", style = "color:MidnightBlue;")),
+# UI #####
+customsidebar <-  dashboardSidebar(
+  sidebarMenu(
+    menuItem("Race", tabName = "Race", icon = icon("th")),
+    menuItem("Gender", icon = icon("th"), tabName = "Gender"),
+    menuItem("Link to data for all IAT tasks", icon = icon("th"), 
+           href = "https://osf.io/y9hiq/")
+  )
+)
 
-     # Sidebar layout with a input and output definitions 
-    sidebarLayout(
-
-    # Input
-    sidebarPanel(
+body <- dashboardBody(
       
-      # Select variable to correlate with IAT
-      selectInput(inputId = "x", 
-                  label = "Select variable to correlate with IAT scores",
-                  choices = c("Age" = "age", 
-                              "Education" = "education", 
-                              "Political ideology (more negative = more conservative; more positive = more liberal; 0 = moderate)" = "politicalid", 
-                              "Explicit preference for White over Black" = "Explicit", 
-                              "Year IAT was taken" = "year"), 
-                  selected = "age"),
-    
-      # Select subset: participant race
-      selectInput(inputId = "prace", 
-                  label = "Select race of participants to plot in histogram",
+  fluidRow(    
+    tabItems(
+        # Race tab content #####
+        tabItem(tabName = "Race",
+        fluidRow(
+        column(width = 4,
+            box(title = "What is the Race IAT?", width = NULL,
+            solidHeader = TRUE, 
+            status = "info", 
+            collapsible = TRUE,
+        "The Implicit Association Test (IAT) measures the strength of associations between 
+        concepts (e.g., Black people, White people) and evaluations (e.g., Good, Bad). A 
+        larger, more positive score represents a greater preference for White people over 
+        Black people.", br(), paste("These plots represent", length(raceiatdat$Implicit), "people, 
+        which is a random
+        sample of .05% of people who took the Race IAT between 2007 and 2016.", "The average 
+        IAT score in this sample is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
+        digits = 3), ".")
+            ),
+            
+            box(title = "Who do you want to see IAT scores for?", width = NULL,
+            solidHeader = TRUE, 
+            status = "info", 
+            collapsible = TRUE,
+                  selectInput(inputId = "race_prace", 
+                  label = "Below, choose whether to graph IAT scores by participant race",
                   choices = c("White" = "White", 
                               "Black" = "Black",
                               "All" = "all"),
-                  selected = "all"),
-      
-      br(),
-      br(),
-      img(src = "pi.png", height = 40, width = 150),
-      br(),
-      br(),
-      "Produced by", a("Liz Redford", href = "https://lizredford.weebly.com"),
-        "in association with ", a("Project Implicit", href = "http://implicit.harvard.edu"),
-      br(),
-      br(),
-      "To access the raw Race IAT datafrom 2002-2017, visit", a("the Open Science Framework",         href = "https://osf.io/52qxl/", "page."),
+                  selected = "all")
+            ),
+        
+            box(title = "What demographic factors correlate with scores on the Race IAT?", width = NULL,
+            solidHeader = TRUE, 
+            status = "info", 
+            collapsible = TRUE,
+                  selectInput(inputId = "x", 
+                  label = "Below, choose a variable to see its correlation with scores on the 
+                  Race IAT",
+                  choices = c("Age" = "age", 
+                              "Education" = "education", 
+                              "Political ideology (more negative = more conservative; more positive = more liberal)" = "politics", 
+                              "Explicit preference for White over Black" = "explicit", 
+                              "Year IAT was taken" = "year"), 
+                  selected = "age")
+            )
+        
+        ),
+        
+        column(width = 8,
+         
+          box(
+          title = "How do people score on the IAT?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              plotOutput(outputId = "racehist", 
+                         height = 330)
+          ),
+         
+          box(
+          title = "Do IAT scores correlate with other factors?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              textOutput(outputId = "racecorr")
 
-      br()
-    
-      ),
-    
-# Mainpanel for displaying outputs ----
-    mainPanel(
-    
-    # Output
-    textOutput("methods"),
-    tags$br(),
-    textOutput("results1"),
-    textOutput("results2"),
-    tags$br(),
-    plotOutput(outputId = "iathist"),
-    tags$br(),
-    textOutput("results3"),
-    tags$br(),
-    tags$br()
-#    br(),
-#    plotOutput(outputId = "scatterplot")
-    )
+          )
+        )
+        )
+        ),
+        
+        # Gender tab content #####
+        tabItem(tabName = "Gender",
+        fluidRow(
+        box(title = "What is the Gender IAT?", width = 6, height = 200,
+                solidHeader = TRUE, 
+                status = "info", 
+                collapsible = TRUE,
+        "The Implicit Association Test (IAT) measures the strength of associations between 
+        concepts (e.g., Women, Men) and evaluations (e.g., Good, Bad).", br
+        (), paste("These plots represent", length(raceiatdat$Implicit), "people, which is a random
+        sample of .05% of people who took the Gender IAT between 2007 and 2016.")
+            )
+        ),
+        fluidRow(
+        box(
+        title = "Plot 2", width = 6, solidHeader = TRUE, status = "primary",
+        "Box content"
+        ),
+        box(
+        title = "Plot 1", width = 6, solidHeader = TRUE, status = "primary",
+        "Box content"
+        )
+      )
     )
   )
+)
+)
 
-
-# Define server ----
+ui <- dashboardPage(
+  dashboardHeader(title = "Explore the data: Implicit Association Test", 
+                  titleWidth = 450
+                  ),
+  customsidebar,
+  body
+)
 
 server <- function(input, output) {
+ 
+# MUST put this scatter/correlation code BEFORE subsetting ggplot/histogram, or histogram will disappear in ui. Maybe subsetting breaks original dataset that scatter/correlation is based on?
 
+  output$racecorr = renderText({
+    df <- (as.data.frame(raceiatdat[, input$x])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
+    paste0("The correlation of ", input$x, " with scores on the Race IAT is ", round(cor(raceiatdat$Implicit,(df[,1]), method = "pearson", use = "complete.obs"), digits = 3), ".")
+    })
+    
   df_subset <- reactive({
-    if (input$prace == "all") { 
-        datbyrace <- dat 
-        return(datbyrace)
+    if (input$race_prace == "all") { 
+        raceiatbyrace <- raceiatdat 
+        return(raceiatbyrace)
         } else {
-    datbyrace <- filter(dat, raceomb == input$prace)
-    return(datbyrace)}
+    raceiatbyrace <- filter(raceiatdat, race == input$race_prace)
+    return(raceiatbyrace)}
   })
   
   df_subset3 <- reactive({
-    if (input$prace == "all") { 
-        datbyrace3 <- dat$Implicit 
-        return(datbyrace3)
+    if (input$race_prace == "all") { 
+        raceiatbyrace3 <- raceiatdat$Implicit 
+        return(raceiatbyrace3)
         } else {
-    datbyrace2 <- filter(dat, raceomb == input$prace)
-    datbyrace3 <- datbyrace2$Implicit
-    return(datbyrace3)}
+    raceiatbyrace2 <- filter(raceiatdat, race == input$race_prace)
+    raceiatbyrace3 <- raceiatbyrace2$Implicit
+    return(raceiatbyrace3)}
   })
-    
-  output$methods = renderText({
-    paste("The Implicit Association Test (IAT) measures the strength of associations between 
-    concepts (e.g., Black people, White people) and evaluations (e.g., Good, Bad). These 
-    plots represent ", length(dat$Implicit), " people, which is a random sample of .05% of 
-    people who took the Race IAT between 2007 and 2016." )
-    })
-    
-  output$results1 = renderText({
-    paste("The mean IAT score in this sample is ", round(mean(dat$Implicit, na.rm = TRUE), 
-    digits = 3), "." )
-    })
 
-    output$results2 = renderText({
-    df <- (as.data.frame(dat[, input$x])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
-    paste0("The correlation of ", input$x, " with IAT score is ", round(cor(dat$Implicit,(df[,1]), method = "pearson", use = "complete.obs"), digits = 3), ".")
-    })
-  
 library(ggplot2)
-output$iathist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
+output$racehist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
   ggplot(data = df_subset(), 
          aes(x = Implicit, fill = Preference)) + 
   geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
@@ -139,26 +190,11 @@ output$iathist <- renderPlot({ #Save output to output list using output$, giving
       x = "(pro-Black)               Implicit               (pro-White)", 
       y = "Participants") + 
   xlim(c(-1.75, 1.75)) + 
-  scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) + NULL #scale_fill_brewer(palette = "PiYG")
-  })
-
-output$results3 = renderText({paste("The mean IAT score for",
-                                    input$prace,
-                                    "participants is ",
-                                    df_subset3() %>% mean(., na.rm = TRUE) %>% round(., digits = 3), "." )
-    })
-    
-#   Create scatterplot
-#   output$scatterplot <- renderPlot({
-#     ggplot(data = dat, aes_string(x = input$x, y = dat$Implicit,color = input$colorby)) +
-#       geom_point(na.rm=TRUE) + theme(text = element_text(size=20)) + labs(title="Implicit Preferences",
-#         y = "(pro-Black)    Implicit    (pro-White)") +
-#          scale_y_continuous(breaks=c(-1.5, -1, -.5, 0, .5, 1, 1.5))
-#  })
+  scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
   
 
+})
+
 }
-# Create Shiny app
-shinyApp(ui = ui, server = server)
 
-
+shinyApp(ui, server)
