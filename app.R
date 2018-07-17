@@ -189,18 +189,12 @@ server <- function(input, output) {
            ", p = ",
            round(racecorrtest$p.value, digits = 2),
            ". This correlation is ",
-          if (racecorrtest$p.value < .05) {
+          if (racecorrtest$p.value < .01) {
           print("statistically significant")
           } else {
           print("not statistically significant")
           },
-          " at alpha = .05, and is ", 
-          if (racecorrtest$p.value < .001) {
-          print("statistically significant")
-          } else {
-          print("not statistically significant")
-          },
-          " at alpha = .001." 
+          " at alpha = .01." 
                    )
 
     })
