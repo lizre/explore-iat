@@ -37,7 +37,8 @@ customsidebar <-  dashboardSidebar(
   sidebarMenu(
     menuItem("Race", tabName = "Race", icon = icon("th")),
     menuItem("Gender", icon = icon("th"), tabName = "Gender"),
-    menuItem("Link to data for all IAT tasks", icon = icon("th"), 
+    menuItem("Learn about the IAT", icon = icon("th"), tabName = "IAT"),
+    menuItem("Access data for all IAT tasks", icon = icon("th"), 
            href = "https://osf.io/y9hiq/")
   )
 )
@@ -46,7 +47,23 @@ body <- dashboardBody(
       
   fluidRow(    
     tabItems(
+        # IAT info tab content #####
+        
+        tabItem(tabName = "IAT",
+        
+        h2("Take an Implicit Association Test (IAT)"),
+"Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here."),
+
+        h2("How does the IAT work?"),
+  "People don’t always say what’s on their minds. One reason is that they are unwilling. For example, someone might report smoking a pack of cigarettes per day because they are embarrassed to admit that they smoke two. Another reason is that they are unable. A smoker might truly believe that she smokes a pack a day, or might not keep track at all. The difference between being unwilling and unable is the difference between purposely hiding something from someone and unknowingly hiding something from yourself.",
+br(),br(),
+"The Implicit Association Test (IAT) measures attitudes and beliefs that people may be unwilling or unable to report. The IAT may be especially interesting if it shows that you have an implicit attitude that you did not know about. For example, you may believe that women and men should be equally associated with science, but your automatic associations could show that you (like many others) associate men with science more than you associate women with science.",
+br(),br(),       "Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page.")
+         
+        ),
+        
         # Race tab content #####
+        
         tabItem(tabName = "Race",
         fluidRow(
         column(width = 4,
@@ -60,11 +77,11 @@ body <- dashboardBody(
         Black people.", br(), paste("These plots represent", length(raceiatdat$Implicit), "people, 
         which is a random
         sample of .05% of people who took the Race IAT between 2007 and 2016.", "The average 
-        IAT score in this sample is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
-        digits = 3), ".")
+        IAT score is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
+        digits = 3), "in this sample.")
             ),
             
-            box(title = "Who do you want to see IAT scores for?", width = NULL,
+            box(title = "Who do you want to see Race IAT scores for?", width = NULL,
             solidHeader = TRUE, 
             status = "info", 
             collapsible = TRUE,
@@ -96,7 +113,7 @@ body <- dashboardBody(
         column(width = 8,
          
           box(
-          title = "How do people score on the IAT?", 
+          title = "How do people score on the Race IAT?", 
               solidHeader = TRUE, 
               width = NULL, 
               status = "primary",
@@ -105,7 +122,7 @@ body <- dashboardBody(
           ),
          
           box(
-          title = "Do IAT scores correlate with other factors?", 
+          title = "Do Race IAT scores correlate with other factors?", 
               solidHeader = TRUE, 
               width = NULL, 
               status = "primary",
@@ -161,7 +178,21 @@ server <- function(input, output) {
 
   output$racecorr = renderText({
     df <- (as.data.frame(raceiatdat[, input$x])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
-    paste0("The correlation of ", input$x, " with scores on the Race IAT is ", round(cor(raceiatdat$Implicit,(df[,1]), method = "pearson", use = "complete.obs"), digits = 3), ".")
+    df2 <- (as.data.frame(raceiatdat[, 1:2])) 
+    racecorrtest <- cor.test(raceiatdat$Implicit,df2[ ,2], method = "pearson", use = "complete.obs")
+    
+    round(racecorrtest$estimate, digits = 3)
+    
+    paste0("The correlation of ", 
+           input$x, 
+           " with scores on the Race IAT is ", 
+           round(cor(raceiatdat$Implicit, 
+                     (df[ ,1]), 
+                     method = "pearson", 
+                     use = "complete.obs"), 
+                 digits = 3), "."
+                   )
+
     })
     
   df_subset <- reactive({
@@ -189,9 +220,9 @@ output$racehist <- renderPlot({ #Save output to output list using output$, givin
          aes(x = Implicit, fill = Preference)) + 
   geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
       theme(text = element_text(size = 20)) +
-      labs(title="Implicit Preferences for White versus Black",
-      x = "(pro-Black)               Implicit               (pro-White)", 
-      y = "Participants") + 
+      labs(
+      x = "(more pro-Black)     IAT Score     (more pro-White)", 
+      y = "Number of Participants") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
   
