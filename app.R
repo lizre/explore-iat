@@ -186,9 +186,13 @@ server <- function(input, output) {
            input$x, 
            " with scores on the Race IAT is ", 
            round(racecorrtest$estimate, digits = 3), 
-           ", p = ",
-           round(racecorrtest$p.value, digits = 2),
-           ". This correlation is ",
+           ", p ",
+          if (racecorrtest$p.value < .001) {
+          print("< .001")
+          } else {
+          print(paste0("= ", round(racecorrtest$p.value, digits = 2)))
+          },
+          ". This correlation is ",
           if (racecorrtest$p.value < .01) {
           print("statistically significant")
           } else {
