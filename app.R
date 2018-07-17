@@ -178,19 +178,29 @@ server <- function(input, output) {
 
   output$racecorr = renderText({
     df <- (as.data.frame(raceiatdat[, input$x])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
-    df2 <- (as.data.frame(raceiatdat[, 1:2])) 
-    racecorrtest <- cor.test(raceiatdat$Implicit,df2[ ,2], method = "pearson", use = "complete.obs")
     
-    round(racecorrtest$estimate, digits = 3)
+    racecorrtest <- cor.test(raceiatdat$Implicit,df[ , input$x], method = "pearson", use = "complete.obs")
     
+
     paste0("The correlation of ", 
            input$x, 
            " with scores on the Race IAT is ", 
-           round(cor(raceiatdat$Implicit, 
-                     (df[ ,1]), 
-                     method = "pearson", 
-                     use = "complete.obs"), 
-                 digits = 3), "."
+           round(racecorrtest$estimate, digits = 3), 
+           ", p = ",
+           round(racecorrtest$p.value, digits = 2),
+           ". This correlation is ",
+          if (racecorrtest$p.value < .05) {
+          print("statistically significant")
+          } else {
+          print("not statistically significant")
+          },
+          " at alpha = .05, and is ", 
+          if (racecorrtest$p.value < .001) {
+          print("statistically significant")
+          } else {
+          print("not statistically significant")
+          },
+          " at alpha = .001." 
                    )
 
     })
