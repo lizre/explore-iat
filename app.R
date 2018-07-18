@@ -37,9 +37,8 @@ customsidebar <-  dashboardSidebar(
   sidebarMenu(
     menuItem("Race", tabName = "Race", icon = icon("th")),
     menuItem("Gender", icon = icon("th"), tabName = "Gender"),
-    menuItem("Learn about the IAT", icon = icon("th"), tabName = "IAT"),
-    menuItem("Access data for all IAT tasks", icon = icon("th"), 
-           href = "https://osf.io/y9hiq/")
+    menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
+    menuItem("About this dashboard", icon = icon("th"), tabName = "about")
   )
 )
 
@@ -49,6 +48,12 @@ body <- dashboardBody(
     tabItems(
         # IAT info tab content #####
         
+        tabItem(tabName = "about",
+        "This dashboard was made by ", tags$a(href="lizredford.weebly.com", "Liz Redford"),
+        "using the publicly-available Project Implicit ", tags$a(href="https://osf.io/y9hiq/", " demo website datasets."), br(),br(), tags$a(href="https://implicit.harvard.edu/implicit/", "Project Implicit"),
+"is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control."
+        ),
+
         tabItem(tabName = "IAT",
         
         h2("Take an Implicit Association Test (IAT)"),
