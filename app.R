@@ -6,7 +6,15 @@ library(here)
 # Import and set up data #####
 library(haven)
 library(dplyr)
-raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
+
+#Import data from Github
+raceiatdat <- read_sav( file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # transform GitHub url from 'Download' button into data frame
+raceiatdat <- read_sav( file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+
+# Alternatively, download data and import using:
+# raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
+# If NOT downloading from Github and instead using file in repo, need to also run this:
+# raceiatdat <- rename(raceiatdat, politics = politicalid)
 
 # Break data into discrete categories for coloring-by in histogram.
 raceiatdat$Preference <- cut(raceiatdat$Implicit, 
@@ -27,7 +35,6 @@ raceiatdat$raceomb <- as.factor(raceiatdat$raceomb)
 
 # Change variable names to nice ones; they are displayed as-in-dataset in correlation output.
 raceiatdat <- rename(raceiatdat, 
-                     politics = politicalid,
                      gender = sex,
                      race = raceomb,
                      explicit = Explicit)
@@ -35,8 +42,8 @@ raceiatdat <- rename(raceiatdat,
 # UI #####
 customsidebar <-  dashboardSidebar(
   sidebarMenu(
-    menuItem("Race", tabName = "Race", icon = icon("th")),
-    menuItem("Gender", icon = icon("th"), tabName = "Gender"),
+    menuItem("Race IAT", tabName = "Race", icon = icon("th")),
+    menuItem("Gender IAT", icon = icon("th"), tabName = "Gender"),
     menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
     menuItem("About this dashboard", icon = icon("th"), tabName = "about")
   )
@@ -51,19 +58,19 @@ body <- dashboardBody(
         tabItem(tabName = "about",
         "This dashboard was made by ", tags$a(href="lizredford.weebly.com", "Liz Redford"),
         "using the publicly-available Project Implicit ", tags$a(href="https://osf.io/y9hiq/", " demo website datasets."), br(),br(), tags$a(href="https://implicit.harvard.edu/implicit/", "Project Implicit"),
-"is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control."
+"is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control.", br(),br(), "This dashboard works best in a browser. If on mobile, it works best positioned in landscape, but still won't appear as intended."
         ),
 
         tabItem(tabName = "IAT",
-        
-        h2("Take an Implicit Association Test (IAT)"),
-"Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here."),
 
         h2("How does the IAT work?"),
   "People don’t always say what’s on their minds. One reason is that they are unwilling. For example, someone might report smoking a pack of cigarettes per day because they are embarrassed to admit that they smoke two. Another reason is that they are unable. A smoker might truly believe that she smokes a pack a day, or might not keep track at all. The difference between being unwilling and unable is the difference between purposely hiding something from someone and unknowingly hiding something from yourself.",
 br(),br(),
 "The Implicit Association Test (IAT) measures attitudes and beliefs that people may be unwilling or unable to report. The IAT may be especially interesting if it shows that you have an implicit attitude that you did not know about. For example, you may believe that women and men should be equally associated with science, but your automatic associations could show that you (like many others) associate men with science more than you associate women with science.",
-br(),br(),       "Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page.")
+br(),br(),       "Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page."),
+
+h2("Take an Implicit Association Test (IAT)"),
+"Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here.")
          
         ),
         
