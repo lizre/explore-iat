@@ -50,7 +50,11 @@ customsidebar <-  dashboardSidebar(
 )
 
 body <- dashboardBody(
-      
+  tags$style(".content {
+                        margin-left:20px;
+                        margin-right:35px;
+                        }"),
+  
   fluidRow(    
     tabItems(
         # IAT info tab content #####
@@ -75,7 +79,7 @@ h2("Take an Implicit Association Test (IAT)"),
         ),
         
         # Race tab content #####
-        
+
         tabItem(tabName = "Race",
         fluidRow(
         column(width = 4,
@@ -223,7 +227,7 @@ server <- function(input, output) {
     raceiatbyrace <- filter(raceiatdat, race == input$race_prace)
     return(raceiatbyrace)}
   })
-  
+
 library(ggplot2)
 output$racehist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
   ggplot(data = df_subset(), 
