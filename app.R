@@ -224,16 +224,6 @@ server <- function(input, output) {
     return(raceiatbyrace)}
   })
   
-  df_subset3 <- reactive({
-    if (input$race_prace == "all") { 
-        raceiatbyrace3 <- raceiatdat$Implicit 
-        return(raceiatbyrace3)
-        } else {
-    raceiatbyrace2 <- filter(raceiatdat, race == input$race_prace)
-    raceiatbyrace3 <- raceiatbyrace2$Implicit
-    return(raceiatbyrace3)}
-  })
-
 library(ggplot2)
 output$racehist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
   ggplot(data = df_subset(), 
