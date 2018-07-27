@@ -14,6 +14,6 @@ This dashboard works best in a browser. If on mobile, it works best positioned i
 
 <b>Using this code and data</b>
 
-The SPSS syntax (.sps files) were used to take a random sample of the Project Implicit publicly-available datasets to create a dataset small enough to be handled by Shiny. These smaller datasets are the ones posted here in this repo.
+The SPSS syntax (.sps files) were used to clean and take a random sample of the Project Implicit publicly-available datasets to create a dataset small enough to be handled by Shiny. These smaller datasets are the ones posted here in this repo.
 
 The code in app.R by default imports the data directly from the Github URL, but also comments out an option to download the data from this repo and then import. If you choose the latter, be sure to also run the commented line of code that recodes the "polticialid variable".
