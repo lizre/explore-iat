@@ -20,7 +20,7 @@ The code in app.R by default imports the data directly from the Github URL, but 
 
  * <i>Race</i>
 
-SPSS syntax (.sps file) was used to clean and take a random sample of the Project Implicit publicly-available datasets to create a dataset small enough to be handled by Shiny. These smaller datasets are the ones posted here in this repo. The SPSS syntax also cleans the original publicly-available dataset; it was partly developed to clean the Project Implicit datasets as part of a <a href = "https://osf.io/rfzhu/">project*</a> led by Kate Ratliff, and much of the syntax was developed by Jenny Howell.
+  SPSS syntax (.sps file) was used to clean and take a random sample of the Project Implicit publicly-available datasets to create a dataset small enough to be handled by Shiny. These smaller datasets are the ones posted here in this repo. The SPSS syntax also cleans the original publicly-available dataset; it was partly developed to clean the Project Implicit datasets as part of a <a href = "https://osf.io/rfzhu/">project*</a> led by Kate Ratliff, and much of the syntax was developed by Jenny Howell.
 
 * <i>Gender-Science</i>
 
