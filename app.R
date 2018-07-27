@@ -8,14 +8,18 @@ library(numform)
 library(haven)
 library(dplyr)
 
-#Import data from Github
-raceiatdat <- read_sav( file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # transform GitHub url from 'Download' button into data frame
-raceiatdat <- read_sav( file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+# --- Import and tidy/format data -----------------------------------------------------------
 
-# Alternatively, download data and import using:
-# raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
-# If NOT downloading from Github and instead using file in repo, need to also run this:
-# raceiatdat <- rename(raceiatdat, politics = politicalid)
+# Race ------------
+
+# Import data from Github
+raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # transform GitHub url from 'Download' button into data frame
+raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+
+# Alternatively, download data and import:
+        # raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
+        # If NOT downloading from Github and instead using file in repo, need to also run this:
+        # raceiatdat <- rename(raceiatdat, politics = politicalid)
 
 # Break data into discrete categories for coloring-by in histogram.
 raceiatdat$Preference <- cut(raceiatdat$Implicit, 
@@ -39,6 +43,15 @@ raceiatdat <- rename(raceiatdat,
                      gender = sex,
                      race = raceomb,
                      explicit = Explicit)
+
+# Gender ------------
+library(readr)
+
+# Import data from Github
+
+# Alternatively, download data and import:
+# gendersciiatdat <- read_csv("gendersciiatdat.csv")
+
 
 # UI #####
 customsidebar <-  dashboardSidebar(
