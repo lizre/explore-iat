@@ -2,6 +2,7 @@ library(shiny)
 library(rsconnect)
 library(shinydashboard)
 library(here)
+library(numform)
 
 # Import and set up data #####
 library(haven)
@@ -45,7 +46,8 @@ customsidebar <-  dashboardSidebar(
     menuItem("Race IAT", tabName = "Race", icon = icon("th")),
     menuItem("Gender IAT", icon = icon("th"), tabName = "Gender"),
     menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
-    menuItem("About this dashboard", icon = icon("th"), tabName = "about")
+    menuItem("About this dashboard", icon = icon("th"), tabName = "about"),
+    menuItem("Donate to Project Implicit", icon = icon("external-link-alt"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
   )
 )
 
@@ -61,17 +63,18 @@ body <- dashboardBody(
         
         tabItem(tabName = "about",
         "This dashboard was made by ", tags$a(href="lizredford.weebly.com", "Liz Redford"),
-        "using the publicly-available Project Implicit ", tags$a(href="https://osf.io/y9hiq/", " demo website datasets."), br(),br(), tags$a(href="https://implicit.harvard.edu/implicit/", "Project Implicit"),
-"is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control.", br(),br(), "This dashboard works best in a browser. If on mobile, it works best positioned in landscape, but still won't appear as intended."
+        "using the publicly-available Project Implicit ", tags$a(href="https://osf.io/y9hiq/", " demonstration website datasets."), br(),br(), tags$a(href="https://implicit.harvard.edu/implicit/", "Project Implicit"),
+"is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control.", "You can donate to Project Implicit", tags$a(href="https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af", "here."),
+br(),br(), "This dashboard works best in a browser. If on mobile, it works best positioned in landscape, but still won't appear as intended."
         ),
 
         tabItem(tabName = "IAT",
 
         h2("How does the IAT work?"),
-  "People don’t always say what’s on their minds. One reason is that they are unwilling. For example, someone might report smoking a pack of cigarettes per day because they are embarrassed to admit that they smoke two. Another reason is that they are unable. A smoker might truly believe that she smokes a pack a day, or might not keep track at all. The difference between being unwilling and unable is the difference between purposely hiding something from someone and unknowingly hiding something from yourself.",
+  "The IAT measures the strength of associations between concepts (e.g., black people, gay people) and evaluations (e.g., good, bad) or stereotypes (e.g., athletic, clumsy). The main idea is that making a response is easier when closely related items share the same response key.", br(), br(),
+"When doing an IAT you are asked to quickly sort words into categories that are on the left and right hand side of the computer screen by pressing the “e” key if the word belongs to the category on the left and the “i” key if the word belongs to the category on the right. The IAT has five main parts.",
 br(),br(),
-"The Implicit Association Test (IAT) measures attitudes and beliefs that people may be unwilling or unable to report. The IAT may be especially interesting if it shows that you have an implicit attitude that you did not know about. For example, you may believe that women and men should be equally associated with science, but your automatic associations could show that you (like many others) associate men with science more than you associate women with science.",
-br(),br(),       "Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page."),
+"Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page."),
 
 h2("Take an Implicit Association Test (IAT)"),
 "Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here.")
@@ -89,18 +92,21 @@ h2("Take an Implicit Association Test (IAT)"),
             collapsible = TRUE,
         "The Implicit Association Test (IAT) measures the strength of associations between 
         concepts (e.g., Black people, White people) and evaluations (e.g., Good, Bad). A 
-        larger, more positive score represents a greater preference for White people over 
-        Black people.", br(), paste("These plots represent", length(raceiatdat$Implicit), "people, 
-        which is a random
-        sample of .05% of people who took the Race IAT between 2007 and 2016.", "The average 
-        IAT score is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
-        digits = 3), "in this sample.")
+        higher score indicates a greater preference for White people over 
+        Black people.", 
+        br(), paste("These plots represent ", length(raceiatdat$Implicit), 
+        " participants, which is a random
+        sample of 0.05% of people who took the Race IAT between 2007 and 2016. The average 
+        IAT score for this overall sample is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
+        digits = 3), " (SD = ", round(sd(raceiatdat$Implicit, na.rm = TRUE), digits = 3), ")", " indicating a moderate implicit preference for White over Black people.", sep = "") # sep = "" to remove paste() automatically adding spaces
             ),
             
-            box(title = "Who do you want to see Race IAT scores for?", width = NULL,
-            solidHeader = TRUE, 
-            status = "info", 
-            collapsible = TRUE,
+        
+            box(title = "Who do you want to see the distribution of Race IAT scores for?", 
+                width = NULL,
+                solidHeader = TRUE, 
+                status = "info", 
+                collapsible = TRUE,
                   selectInput(inputId = "race_prace", 
                   label = "Below, choose whether to graph IAT scores by participant race",
                   choices = c("White" = "White", 
@@ -157,9 +163,11 @@ h2("Take an Implicit Association Test (IAT)"),
                 status = "info", 
                 collapsible = TRUE,
         "The Implicit Association Test (IAT) measures the strength of associations between 
-        concepts (e.g., Women, Men) and evaluations (e.g., Good, Bad).", br
+        concepts (e.g., Women, Men) and evaluations (e.g., Good, Bad).", "A
+        higher score indicates a greater association between men and science relative to 
+        women and science.", br
         (), paste("These plots represent", length(raceiatdat$Implicit), "people, which is a random
-        sample of .05% of people who took the Gender IAT between 2007 and 2016.")
+        sample of 0.05% of people who took the Gender IAT between 2007 and 2016.")
             )
         ),
         fluidRow(
@@ -200,8 +208,8 @@ server <- function(input, output) {
 
     paste0("The correlation of ", 
            input$x, 
-           " with scores on the Race IAT is ", 
-           round(racecorrtest$estimate, digits = 3), 
+           " with scores on the Race IAT is r = ", 
+           f_num(racecorrtest$estimate, digits = 3), #f_num removes leading 0s
            ", p ",
           if (racecorrtest$p.value < .001) {
           print("< .001")
