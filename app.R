@@ -13,8 +13,8 @@ library(dplyr)
 # Race ------------
 
 # Import data from Github
-raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # transform GitHub url from 'Download' button into data frame
 raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+# raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # can also transform GitHub url from 'Download' button into data frame
 
 # Alternatively, download data and import:
         # raceiatdat <- read_spss("raceiat_N7983.sav") %>% select(Implicit, Explicit, raceomb, sex, politicalid, year, age, education)
@@ -48,16 +48,38 @@ raceiatdat <- rename(raceiatdat,
 library(readr)
 
 # Import data from Github
+gendersciiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/raw/master/gendersciiatdat.csv?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
 
 # Alternatively, download data and import:
 # gendersciiatdat <- read_csv("gendersciiatdat.csv")
 
+# Break data into discrete categories for coloring-by in histogram.
+gendersciiatdat$Association <- cut(gendersciiatdat$implicit, 
+    breaks = c(-Inf, -.15, .15, Inf), 
+    labels = c("Stronger Female--Science Association", 
+               "No Gender--Science Association", 
+               "Stronger Male--Science Association"), 
+    right = FALSE)
+
+# Coerce to factors for ggplot
+gendersciiatdat$sex <- as.factor(gendersciiatdat$sex)
+gendersciiatdat$sex <- recode(gendersciiatdat$sex, 
+                      "f" = "Female",
+                      "m" = "Male") 
+gendersciiatdat$sex[gendersciiatdat$sex == "."] <- NA # Code "." as missing
+
+gendersciiatdat$raceomb <- as.factor(gendersciiatdat$raceomb)
+
+# Change variable names to nice ones; they are displayed as-in-dataset in correlation output.
+gendersciiatdat <- rename(gendersciiatdat, 
+                     gender = sex,
+                     race = raceomb)
 
 # UI #####
 customsidebar <-  dashboardSidebar(
   sidebarMenu(
     menuItem("Race IAT", tabName = "Race", icon = icon("th")),
-    menuItem("Gender IAT", icon = icon("th"), tabName = "Gender"),
+    menuItem("Gender-Science IAT", icon = icon("th"), tabName = "Gender"),
     menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
     menuItem("About this dashboard", icon = icon("th"), tabName = "about"),
     menuItem("Donate to Project Implicit", icon = icon("external-link-alt"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
@@ -171,32 +193,79 @@ h2("Take an Implicit Association Test (IAT)"),
         # Gender tab content #####
         tabItem(tabName = "Gender",
         fluidRow(
-        box(title = "What is the Gender IAT?", width = 6, height = 200,
+        column(width = 4,
+        box(title = "What is the Gender-Science IAT?", width = NULL, 
                 solidHeader = TRUE, 
                 status = "info", 
                 collapsible = TRUE,
-        "The Implicit Association Test (IAT) measures the strength of associations between 
-        concepts (e.g., Women, Men) and evaluations (e.g., Good, Bad).", "A
+       "The Implicit Association Test (IAT) measures the strength of associations between 
+        concepts (e.g., Women, Men) and concepts (e.g., Science, Liberal Arts).", "A
         higher score indicates a greater association between men and science relative to 
         women and science.", br
-        (), paste("These plots represent", length(raceiatdat$Implicit), "people, which is a random
-        sample of 0.05% of people who took the Gender IAT between 2007 and 2016.")
+        (), paste("These plots represent ", length(gendersciiatdat$implicit), " people, which is a random
+        sample of 2% of people who took the Gender IAT between 2007 and 2015. The average 
+        IAT score for this overall sample is ", round(mean(gendersciiatdat$implicit, na.rm = TRUE), 
+        digits = 3), " (SD = ", round(sd(gendersciiatdat$implicit, na.rm = TRUE), digits = 3), ")", " indicating a moderately strong association between men and science relative to women and science.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        ),
+         
+        box(title = "Who do you want to see the distribution of Gender-Science IAT scores for?", 
+        width = NULL,
+        solidHeader = TRUE, 
+        status = "info", 
+        collapsible = TRUE,
+          selectInput(inputId = "gender_pgender", 
+          label = "Below, choose whether to graph IAT scores by participant gender",
+          choices = c("Female" = "Female", 
+                      "Male" = "Male",
+                      "All" = "all"),
+          selected = "all")
+         ),
+       
+         box(title = "What demographic factors correlate with scores on the Gender-Science IAT?", 
+          width = NULL,
+          solidHeader = TRUE, 
+          status = "info", 
+          collapsible = TRUE,
+            selectInput(inputId = "x2", 
+            label = "Below, choose a variable to see its correlation with scores on the 
+            Gender-Science IAT",
+            choices = c("Age" = "age", 
+                        "Education" = "education", 
+                        "Political ideology (more negative = more conservative; more positive = more liberal)" = "politics", 
+                        "Explicit preference for White over Black" = "explicit", 
+                        "Year IAT was taken" = "year"), 
+            selected = "age")
             )
-        ),
-        fluidRow(
-        box(
-        title = "Plot 2", width = 6, solidHeader = TRUE, status = "primary",
-        "Box content"
-        ),
-        box(
-        title = "Plot 1", width = 6, solidHeader = TRUE, status = "primary",
-        "Box content"
+        
+        ), # this column
+        
+        column(width = 8,
+         
+          box(
+          title = "How do people score on the Gender-Science IAT?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              plotOutput(outputId = "genderscihist", 
+                         height = 330)
+          ),
+          
+          box(
+          title = "Do Gender-Science IAT scores correlate with other factors?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              textOutput(outputId = "genderscicorr")
+
+          )
         )
-      )
-    )
-  )
-)
-)
+        ) #fluidRow
+        
+        ) # Gender tabItem
+        ) # tabItems
+        
+) # fluidRow 
+) # dashboardBody
 
 # UI #####
 ui <- dashboardPage(
