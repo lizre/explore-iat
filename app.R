@@ -56,9 +56,9 @@ gendersciiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/ra
 # Break data into discrete categories for coloring-by in histogram.
 gendersciiatdat$Association <- cut(gendersciiatdat$implicit, 
     breaks = c(-Inf, -.15, .15, Inf), 
-    labels = c("Stronger Female--Science Association", 
-               "No Gender--Science Association", 
-               "Stronger Male--Science Association"), 
+    labels = c("Stronger Female--Science \n Association", 
+               "No Gender--Science \n Association", 
+               "Stronger Male--Science \n Association"), 
     right = FALSE)
 
 # Coerce to factors for ggplot
@@ -154,7 +154,7 @@ h2("Take an Implicit Association Test (IAT)"),
             solidHeader = TRUE, 
             status = "info", 
             collapsible = TRUE,
-                  selectInput(inputId = "x", 
+                  selectInput(inputId = "race_corrvar", 
                   label = "Below, choose a variable to see its correlation with scores on the 
                   Race IAT",
                   choices = c("Age" = "age", 
@@ -213,7 +213,7 @@ h2("Take an Implicit Association Test (IAT)"),
         solidHeader = TRUE, 
         status = "info", 
         collapsible = TRUE,
-          selectInput(inputId = "gender_pgender", 
+          selectInput(inputId = "gendersci_pgender", 
           label = "Below, choose whether to graph IAT scores by participant gender",
           choices = c("Female" = "Female", 
                       "Male" = "Male",
@@ -226,7 +226,7 @@ h2("Take an Implicit Association Test (IAT)"),
           solidHeader = TRUE, 
           status = "info", 
           collapsible = TRUE,
-            selectInput(inputId = "x2", 
+            selectInput(inputId = "gendersci_corrvar", 
             label = "Below, choose a variable to see its correlation with scores on the 
             Gender-Science IAT",
             choices = c("Age" = "age", 
@@ -280,16 +280,19 @@ ui <- dashboardPage(
 
 server <- function(input, output) {
  
+### Generate reactive output: correlations ------
+
+# Race -----
+
 # MUST put this scatter/correlation code BEFORE subsetting ggplot/histogram, or histogram will disappear in ui. Maybe subsetting breaks original dataset that scatter/correlation is based on?
 
   output$racecorr = renderText({
-    df <- (as.data.frame(raceiatdat[, input$x])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
+    df <- (as.data.frame(raceiatdat[, input$race_corrvar])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
     
-    racecorrtest <- cor.test(raceiatdat$Implicit,df[ , input$x], method = "pearson", use = "complete.obs")
+    racecorrtest <- cor.test(raceiatdat$Implicit,df[ , input$race_corrvar], method = "pearson", use = "complete.obs")
     
-
     paste0("The correlation of ", 
-           input$x, 
+           input$race_corrvar, 
            " with scores on the Race IAT is r = ", 
            f_num(racecorrtest$estimate, digits = 3), #f_num removes leading 0s
            ", p ",
@@ -308,8 +311,43 @@ server <- function(input, output) {
                    )
 
     })
+
+
+# Gender-Science -----
+
+# MUST put this scatter/correlation code BEFORE subsetting ggplot/histogram, or histogram will disappear in ui. Maybe subsetting breaks original dataset that scatter/correlation is based on?
+
+  output$genderscicorr = renderText({
+    df2 <- (as.data.frame(gendersciiatdat[, input$gendersci_corrvar])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
+
+  genderscicorrtest <- cor.test(gendersciiatdat$implicit,df2[ , input$gendersci_corrvar], method = "pearson", use = "complete.obs")
     
-  df_subset <- reactive({
+    paste0("The correlation of ", 
+           input$gendersci_corrvar, 
+           " with scores on the Gender-Science IAT is r = ", 
+           f_num(genderscicorrtest$estimate, digits = 3), #f_num removes leading 0s
+           ", p ",
+          if (genderscicorrtest$p.value < .001) {
+          print("< .001")
+          } else {
+          print(paste0("= ", round(genderscicorrtest$p.value, digits = 2)))
+          },
+          ". This correlation is ",
+          if (genderscicorrtest$p.value < .01) {
+          print("statistically significant")
+          } else {
+          print("not statistically significant")
+          },
+          " at alpha = .01." 
+                   )
+
+    })
+
+### Generate reactive output: histograms ------
+  
+# Race -----
+  
+  df_subset_race <- reactive({
     if (input$race_prace == "all") { 
         raceiatbyrace <- raceiatdat 
         return(raceiatbyrace)
@@ -320,7 +358,7 @@ server <- function(input, output) {
 
 library(ggplot2)
 output$racehist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
-  ggplot(data = df_subset(), 
+  ggplot(data = df_subset_race(), 
          aes(x = Implicit, fill = Preference)) + 
   geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
       theme(text = element_text(size = 20)) +
@@ -329,10 +367,31 @@ output$racehist <- renderPlot({ #Save output to output list using output$, givin
       y = "Number of Participants") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
-  
-
 })
 
-}
+# Gender-Science -----
+
+  df_subset_gendersci <- reactive({
+    if (input$gendersci_pgender == "all") { 
+        gendersciiatbygender <- gendersciiatdat
+        return(gendersciiatbygender)
+        } else {
+    gendersciiatbygender <- filter(gendersciiatdat, gender == input$gendersci_pgender)
+    return(gendersciiatbygender)}
+  })
+
+output$genderscihist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
+  ggplot(data = df_subset_gendersci(), 
+         aes(x = implicit, fill = Association)) + 
+  geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
+      theme(text = element_text(size = 20)) +
+      labs(
+      x = "  (Stronger                                (Stronger \n   women-science    IAT Score   men-science \n    association)                             association)", 
+      y = "Number of Participants") + 
+  xlim(c(-1.75, 1.75)) + 
+  scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
+})
+
+} # server
 
 shinyApp(ui, server)
