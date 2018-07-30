@@ -82,7 +82,7 @@ customsidebar <-  dashboardSidebar(
     menuItem("Gender-Science IAT", icon = icon("th"), tabName = "Gender"),
     menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
     menuItem("About this dashboard", icon = icon("th"), tabName = "about"),
-    menuItem("Donate to Project Implicit", icon = icon("external-link-alt"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
+    menuItem("Donate to Project Implicit", icon = icon("th"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
   )
 )
 
@@ -100,7 +100,9 @@ body <- dashboardBody(
         "This dashboard was made by ", tags$a(href="lizredford.weebly.com", "Liz Redford"),
         "using the publicly-available Project Implicit ", tags$a(href="https://osf.io/y9hiq/", " demonstration website datasets."), br(),br(), tags$a(href="https://implicit.harvard.edu/implicit/", "Project Implicit"),
 "is a non-profit organization and international collaboration between researchers who are interested in implicit social cognition - thoughts and feelings outside of conscious awareness and control.", "You can donate to Project Implicit", tags$a(href="https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af", "here."),
-br(),br(), "This dashboard works best in a browser. If on mobile, it works best positioned in landscape, but still won't appear as intended."
+br(),br(), "This dashboard works best in a browser. If on mobile, it works best positioned in landscape, but still won't appear as intended.",
+br(),br(), "You can find all data and code used to create this dashboard at",
+tags$a(href="https://github.com/lizredford/explore-iat", "Github.")
         ),
 
         tabItem(tabName = "IAT",
@@ -112,7 +114,7 @@ br(),br(),
 "Read more at", tags$a(href="https://implicit.harvard.edu/implicit/iatdetails.html", "the Project Implicit page."),
 
 h2("Take an Implicit Association Test (IAT)"),
-"Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here.")
+"Take an IAT yourself by clicking ", tags$a(href="https://implicit.harvard.edu/implicit/takeatest.html", "here; you'll get personal feedback on your preferences or associations.")
          
         ),
         
