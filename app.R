@@ -56,9 +56,9 @@ gendersciiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/ra
 # Break data into discrete categories for coloring-by in histogram.
 gendersciiatdat$Association <- cut(gendersciiatdat$implicit, 
     breaks = c(-Inf, -.15, .15, Inf), 
-    labels = c("Stronger Female--Science \n Association", 
+    labels = c("Female--Science \n Association", 
                "No Gender--Science \n Association", 
-               "Stronger Male--Science \n Association"), 
+               "Male--Science \n Association"), 
     right = FALSE)
 
 # Coerce to factors for ggplot
@@ -232,7 +232,7 @@ h2("Take an Implicit Association Test (IAT)"),
             choices = c("Age" = "age", 
                         "Education" = "education", 
                         "Political ideology (more negative = more conservative; more positive = more liberal)" = "politics", 
-                        "Explicit preference for White over Black" = "explicit", 
+                        "Explicit associations between men and science relative to women and science" = "explicit", 
                         "Year IAT was taken" = "year"), 
             selected = "age")
             )
@@ -291,9 +291,19 @@ server <- function(input, output) {
     
     racecorrtest <- cor.test(raceiatdat$Implicit,df[ , input$race_corrvar], method = "pearson", use = "complete.obs")
     
-    paste0("The correlation of ", 
+   paste0("There is a ",
+          if (racecorrtest$estimate < .09) {
+            print("negligible")
+          } else if (racecorrtest$estimate > .09 & racecorrtest$estimate < .291) {
+            print("small")
+          } else if (racecorrtest$estimate > .291 & racecorrtest$estimate < .491) {
+            print("medium")
+          } else {
+            print ("large")
+          },
+          " correlation between ",
            input$race_corrvar, 
-           " with scores on the Race IAT is r = ", 
+           " and scores on the Race IAT, r = ", 
            f_num(racecorrtest$estimate, digits = 3), #f_num removes leading 0s
            ", p ",
           if (racecorrtest$p.value < .001) {
@@ -301,14 +311,8 @@ server <- function(input, output) {
           } else {
           print(paste0("= ", round(racecorrtest$p.value, digits = 2)))
           },
-          ". This correlation is ",
-          if (racecorrtest$p.value < .01) {
-          print("statistically significant")
-          } else {
-          print("not statistically significant")
-          },
-          " at alpha = .01." 
-                   )
+          "."
+             )
 
     })
 
@@ -322,24 +326,28 @@ server <- function(input, output) {
 
   genderscicorrtest <- cor.test(gendersciiatdat$implicit,df2[ , input$gendersci_corrvar], method = "pearson", use = "complete.obs")
     
-    paste0("The correlation of ", 
-           input$gendersci_corrvar, 
-           " with scores on the Gender-Science IAT is r = ", 
-           f_num(genderscicorrtest$estimate, digits = 3), #f_num removes leading 0s
-           ", p ",
+    paste0("There is a ",
+          if (genderscicorrtest$estimate < .09) {
+            print("negligible")
+          } else if (genderscicorrtest$estimate > .09 & genderscicorrtest$estimate < .291) {
+            print("small")
+          } else if (genderscicorrtest$estimate > .291 & genderscicorrtest$estimate < .491) {
+            print("medium")
+          } else {
+            print ("large")
+          },
+          " correlation between ",
+          input$gendersci_corrvar, 
+          " and scores on the Gender-Science IAT, r = ", 
+          f_num(genderscicorrtest$estimate, digits = 3), #f_num removes leading 0s
+          ", p ",
           if (genderscicorrtest$p.value < .001) {
           print("< .001")
           } else {
           print(paste0("= ", round(genderscicorrtest$p.value, digits = 2)))
           },
-          ". This correlation is ",
-          if (genderscicorrtest$p.value < .01) {
-          print("statistically significant")
-          } else {
-          print("not statistically significant")
-          },
-          " at alpha = .01." 
-                   )
+          "."
+               )
 
     })
 
@@ -384,9 +392,10 @@ output$genderscihist <- renderPlot({ #Save output to output list using output$, 
   ggplot(data = df_subset_gendersci(), 
          aes(x = implicit, fill = Association)) + 
   geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
-      theme(text = element_text(size = 20)) +
+      theme(text = element_text(size = 20),
+            legend.key.size = unit(2.5, 'lines')) +
       labs(
-      x = "  (Stronger                                (Stronger \n   women-science    IAT Score   men-science \n    association)                             association)", 
+      x = " (Stronger                                (Stronger \n  female-science    IAT Score     male-science \n  association)                             association)", 
       y = "Number of Participants") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
