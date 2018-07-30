@@ -13,7 +13,7 @@ library(dplyr)
 # Race ------------
 
 # Import data from Github
-raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+raceiatdat <- read_sav(file = "https://github.com/lizredford/explore-iat/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
 # raceiatdat <- read_sav(file = "https://github.com/lizredford/Race-IAT-descriptives-shiny/raw/master/raceiat_N7983.sav") # can also transform GitHub url from 'Download' button into data frame
 
 # Alternatively, download data and import:
