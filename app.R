@@ -135,7 +135,7 @@ h2("Take an Implicit Association Test (IAT)"),
         " participants, which is a random
         sample of 0.05% of people who took the Race IAT between 2007 and 2016. The average 
         IAT score for this overall sample is ", round(mean(raceiatdat$Implicit, na.rm = TRUE), 
-        digits = 3), " (SD = ", round(sd(raceiatdat$Implicit, na.rm = TRUE), digits = 3), ")", " indicating a moderate implicit preference for White over Black people.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        digits = 3), " (SD = ", f_num(sd(raceiatdat$Implicit, na.rm = TRUE), digits = 2), ")", " indicating a moderate implicit preference for White over Black people.", sep = "") # sep = "" to remove paste() automatically adding spaces
             ),
             
         
@@ -207,7 +207,7 @@ h2("Take an Implicit Association Test (IAT)"),
         (), paste("These plots represent ", length(gendersciiatdat$implicit), " people, which is a random
         sample of 2% of people who took the Gender IAT between 2007 and 2015. The average 
         IAT score for this overall sample is ", round(mean(gendersciiatdat$implicit, na.rm = TRUE), 
-        digits = 3), " (SD = ", round(sd(gendersciiatdat$implicit, na.rm = TRUE), digits = 3), ")", " indicating a moderately strong association between men and science relative to women and science.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        digits = 3), " (SD = ", f_num(sd(gendersciiatdat$implicit, na.rm = TRUE), digits = 2), ")", " indicating a moderately strong association between men and science relative to women and science.", sep = "") # sep = "" to remove paste() automatically adding spaces
         ),
          
         box(title = "Who do you want to see the distribution of Gender-Science IAT scores for?", 
@@ -374,7 +374,8 @@ output$racehist <- renderPlot({ #Save output to output list using output$, givin
       theme(text = element_text(size = 20)) +
       labs(
       x = "(more pro-Black)     IAT Score     (more pro-White)", 
-      y = "Number of Participants") + 
+      y = "Number of Participants", 
+      fill = "Implicit Preference") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
@@ -398,7 +399,8 @@ output$genderscihist <- renderPlot({ #Save output to output list using output$, 
             legend.key.size = unit(2.5, 'lines')) +
       labs(
       x = " (Stronger                                (Stronger \n  female-science    IAT Score     male-science \n  association)                             association)", 
-      y = "Number of Participants") + 
+      y = "Number of Participants",
+      fill = "Implicit Association") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
