@@ -8,9 +8,9 @@ library(numform)
 library(haven)
 library(dplyr)
 
-# --- Import and tidy/format data -----------------------------------------------------------
+# --- Import and tidy/format data ----------------------------------------------------------
 
-# Race ------------
+# Import and tidy Race data  ------------
 
 # Import data from Github
 raceiatdat <- read_sav(file = "https://github.com/lizredford/explore-iat/blob/master/raceiat_N7983.sav?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
@@ -44,7 +44,7 @@ raceiatdat <- rename(raceiatdat,
                      race = raceomb,
                      explicit = Explicit)
 
-# Gender ------------
+# Import and tidy Gender-Science data ------------
 library(readr)
 
 # Import data from Github
@@ -74,6 +74,72 @@ gendersciiatdat$raceomb <- as.factor(gendersciiatdat$raceomb)
 gendersciiatdat <- rename(gendersciiatdat, 
                      gender = sex,
                      race = raceomb)
+
+
+# Import and tidy Sexuality data ------------
+
+sexualityiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/raw/master/sexualityiatdat.csv?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+
+# Break data into discrete categories for coloring-by in histogram.
+sexualityiatdat$Preference <- cut(sexualityiatdat$Implicit, 
+    breaks = c(-Inf, -.15, .15, Inf), 
+    labels = c("Pro-Gay Preference", 
+               "No Sexuality Preference", 
+               "Pro-Straight Preference"), 
+    right = FALSE)
+
+# Coerce to factor for ggplot
+sexualityiatdat$sexualityall <- as.factor(sexualityiatdat$sexualityall)
+
+# Change participant sexuality numeric labels to descriptive ones
+sexualityiatdat$sexualityall <- recode(sexualityiatdat$sexualityall, 
+                      "1" = "Heterosexual",
+                      "2" = "Gay or Lesbian",
+                      "3" = "Bisexual",
+                      "4" = "Asexual",
+                      "5" = "Questioning") 
+
+# Change to dichotomous labels to subset by
+sexualityiatdat$sexuality_dichot <- recode(sexualityiatdat$sexualityall, 
+          "Heterosexual" = "Heterosexual",
+          "Gay or Lesbian" = "Not heterosexual (gay, bisexual, asexual, or questioning)",
+          "Bisexual" = "Not heterosexual (gay, bisexual, asexual, or questioning",
+          "Asexual" = "Not heterosexual (gay, bisexual, asexual, or questioning",
+          "Questioning" = "Not heterosexual (gay, bisexual, asexual, or questioning") 
+
+# Import and tidy Age data ------------
+
+ageiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/raw/master/ageiatdat.csv?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
+
+# Break data into discrete categories for coloring-by in histogram.
+ageiatdat$Preference <- cut(ageiatdat$Implicit, 
+    breaks = c(-Inf, -.15, .15, Inf), 
+    labels = c("Pro-Old Preference", 
+               "No Age Preference", 
+               "Pro-Young Preference"), 
+    right = FALSE)
+
+# Coerce to factor for ggplot
+ageiatdat$Age_group <- as.factor(ageiatdat$Age_group)
+table(ageiatdat$Age_group)
+# Change participant age group numeric labels to descriptive ones
+ageiatdat$Age_group <- recode(ageiatdat$Age_group, 
+                      "1" = "20 or younger",
+                      "2" = "21 - 30",
+                      "3" = "31 - 40",
+                      "4" = "41 - 50",
+                      "5" = "51 - 60",
+                      "6" = "61 or older") 
+
+# Create new variable that cuts participant ages into 3 groups to subset by
+ageiatdat$Age_group_3 <- recode(ageiatdat$Age_group, 
+                      "20 or younger" = "30 or younger",
+                      "21 - 30" = "30 or younger",
+                      "31 - 40" = "31 - 50",
+                      "41 - 50" = "31 - 50",
+                      "51 - 60" = "51 or older",
+                      "61 or older" = "51 or older") 
+
 
 # UI #####
 customsidebar <-  dashboardSidebar(
