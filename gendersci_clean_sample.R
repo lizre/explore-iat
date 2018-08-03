@@ -1,4 +1,4 @@
-# This code was used to take certain variables from, and a random sample of, data from the Gender-Science Implicit Association Test. This data had already been cleaned by Hila Zitelny as part of the same Documenting Bias project.
+# This code was used to take certain variables from, and a random sample of, data from the Gender-Science Implicit Association Test. This data had already been cleaned as part of the same Documenting Bias project.
 
 library(here)
 library(dplyr)
