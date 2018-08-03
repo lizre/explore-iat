@@ -3,7 +3,7 @@
 library(here)
 library(dplyr)
 
-sexualityiatdat <- read_sav("sexuality_cleaned.sav") %>% select(Implicit, Explicit, racenum, sexnum, politics, datecode, age, year, education, numiats, religiosity) # import data, selecting only needed variables
+sexualityiatdat <- read_sav("sexuality_cleaned.sav") %>% select(Implicit, Explicit, racenum, sexnum, politics, datecode, age, year, education, numiats, religiosity, sexualityall) # import data, selecting only needed variables
 #  N = 993 953
 
 sexualityiatdat <- sexualityiatdat[sample(1:nrow(sexualityiatdat), 8000, replace = FALSE),] # Take random sample of 8000 rows; about .8%
