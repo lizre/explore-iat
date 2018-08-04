@@ -55,12 +55,9 @@ EXECUTE.
 **politicalid should not be used instead use politicalid_7 UNLESS you are only using data from after 2/6/2006 (in this case)**
 
 RECODE politicalid (-999=SYSMIS) (MISSING=SYSMIS).
+EXECUTE.
 
-RECODE politicalid_7 (7=1) (6=2) (5=3) (4=4) (3=5) (2=6) (1=7) into politics_2.
-EXECUTE.
-COMPUTE politics_1 =politicalid_7.
-EXECUTE.
-COMPUTE politics = mean(politics_1,politics_2).
+COMPUTE politics = politicalid.
 EXECUTE.
 COMPUTE religiosity=religionid.
 RECODE num ('0'=1) ('1'=2) ('2'=3) ('3-5'=4) ('6+'=5) INTO numiats.
