@@ -146,6 +146,8 @@ customsidebar <-  dashboardSidebar(
   sidebarMenu(
     menuItem("Race IAT", tabName = "Race", icon = icon("th")),
     menuItem("Gender-Science IAT", icon = icon("th"), tabName = "Gender"),
+    menuItem("Sexuality IAT", icon = icon("th"), tabName = "Sexuality"),
+    menuItem("Age IAT", icon = icon("th"), tabName = "Age"),
     menuItem("About the IAT", icon = icon("th"), tabName = "IAT"),
     menuItem("About this dashboard", icon = icon("th"), tabName = "about"),
     menuItem("Donate to Project Implicit", icon = icon("th"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
