@@ -107,6 +107,8 @@ sexualityiatdat$sexuality_dichot <- recode(sexualityiatdat$sexualityall,
           "Asexual" = "Not heterosexual (gay, bisexual, asexual, or questioning",
           "Questioning" = "Not heterosexual (gay, bisexual, asexual, or questioning") 
 
+sexualityiatdat$politics <- as.numeric(sexualityiatdat$politics)
+mean(sexualityiatdat$politics, na.rm=T)
 # Import and tidy Age data ------------
 
 ageiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/raw/master/ageiatdat.csv?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
@@ -260,7 +262,7 @@ h2("Take an Implicit Association Test (IAT)"),
         )
         ),
         
-        # Gender tab content #####
+        # Gender-science tab content #####
         tabItem(tabName = "Gender",
         fluidRow(
         column(width = 4,
@@ -331,7 +333,81 @@ h2("Take an Implicit Association Test (IAT)"),
         )
         ) #fluidRow
         
-        ) # Gender tabItem
+        ), # Gender tabItem
+
+      # Sexuality tab content #####
+
+        tabItem(tabName = "Sexuality",
+        fluidRow(
+        column(width = 4,
+        box(title = "What is the Sexuality IAT?", width = NULL, 
+                solidHeader = TRUE, 
+                status = "info", 
+                collapsible = TRUE,
+       "The Implicit Association Test (IAT) measures the strength of associations between 
+        concepts (e.g., gay, straight) and concepts (e.g., good, bad). A 
+        higher score indicates a greater preference for straight people over 
+        gay people.", br
+        (), paste("These plots represent ", length(sexualityiatdat$Implicit), " people, which is a random
+        sample of 0.8% of people who took the Sexuality IAT between 2007 and 2015. The average 
+        IAT score for this overall sample is ", round(mean(sexualityiatdat$Implicit, na.rm = TRUE), 
+        digits = 3), " (SD = ", f_num(sd(sexualityiatdat$Implicit, na.rm = TRUE), digits = 2), ")", " indicating a moderate implicit preference for straight over gay people.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        ),
+         
+        box(title = "Who do you want to see the distribution of Sexuality IAT scores for?", 
+        width = NULL,
+        solidHeader = TRUE, 
+        status = "info", 
+        collapsible = TRUE,
+          selectInput(inputId = "sexuality_psexuality", 
+          label = "Below, choose whether to graph IAT scores by participant sexuality",
+          choices = c("Heterosexual" = "Heterosexual", 
+                      "Not heterosexual (gay, bisexual, asexual, or questioning)" = "Not heterosexual (gay, bisexual, asexual, or questioning)",
+                      "All" = "all"),
+          selected = "all")
+         ),
+       
+         box(title = "What demographic factors correlate with scores on the Sexuality IAT?", 
+          width = NULL,
+          solidHeader = TRUE, 
+          status = "info", 
+          collapsible = TRUE,
+            selectInput(inputId = "sexuality_corrvar", 
+            label = "Below, choose a variable to see its correlation with scores on the 
+            Sexuality IAT",
+            choices = c("Age" = "age", 
+                        "Education" = "education", 
+                        "Political ideology (more negative = more conservative; more positive = more liberal)" = "politics", 
+                        "Explicit preference for straight over gay" = "Explicit", 
+                        "Year IAT was taken" = "year"), 
+            selected = "age")
+            )
+        
+        ), # this column
+        
+        column(width = 8,
+         
+          box(
+          title = "How do people score on the Sexuality IAT?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              plotOutput(outputId = "sexualityhist", 
+                         height = 330)
+          ),
+          
+          box(
+          title = "Do Sexuality IAT scores correlate with other factors?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              textOutput(outputId = "sexualitycorr")
+
+          )
+        )
+        ) #fluidRow
+        
+        )
         ) # tabItems
         
 ) # fluidRow 
@@ -421,6 +497,41 @@ server <- function(input, output) {
 
     })
 
+# Sexuality correlations -----
+
+# MUST put this scatter/correlation code BEFORE subsetting ggplot/histogram, or histogram will disappear in ui. Maybe subsetting breaks original dataset that scatter/correlation is based on?
+
+  output$sexualitycorr = renderText({
+    df <- (as.data.frame(sexualityiatdat[, input$sexuality_corrvar])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
+    
+    sexualitycorrtest <- cor.test(sexualityiatdat$Implicit,df[ , input$sexuality_corrvar], method = "pearson", use = "complete.obs")
+    
+   paste0("There is a ",
+          if (sexualitycorrtest$estimate < .09) {
+            print("negligible")
+          } else if (sexualitycorrtest$estimate > .09 & sexualitycorrtest$estimate < .291) {
+            print("small")
+          } else if (sexualitycorrtest$estimate > .291 & v$estimate < .491) {
+            print("medium")
+          } else {
+            print ("large")
+          },
+          " correlation between ",
+           input$sexuality_corrvar, 
+           " and scores on the Sexuality IAT, r = ", 
+           f_num(sexualitycorrtest$estimate, digits = 3), #f_num removes leading 0s
+           ", p ",
+          if (sexualitycorrtest$p.value < .001) {
+          print("< .001")
+          } else {
+          print(paste0("= ", round(sexualitycorrtest$p.value, digits = 2)))
+          },
+          "."
+             )
+
+    })
+
+  
 ### Generate reactive output: histograms ------
   
 # Race -----
@@ -469,6 +580,30 @@ output$genderscihist <- renderPlot({ #Save output to output list using output$, 
       x = " (Stronger                                (Stronger \n  female-science    IAT Score     male-science \n  association)                             association)", 
       y = "Number of Participants",
       fill = "Implicit Association") + 
+  xlim(c(-1.75, 1.75)) + 
+  scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
+})
+
+# Sexuality -----
+  
+  df_subset_sexuality <- reactive({
+    if (input$sexuality_psexuality == "all") { 
+        sexualityiatbypsexu <- sexualityiatdat 
+        return(sexualityiatbypsexu)
+        } else {
+    sexualityiatbypsexu <- filter(sexualityiatdat, sexuality_dichot == input$sexuality_psexuality)
+    return(sexualityiatbypsexu)}
+  })
+
+output$sexualityhist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
+  ggplot(data = df_subset_sexuality(), 
+         aes(x = Implicit, fill = Preference)) + 
+  geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
+      theme(text = element_text(size = 20)) +
+      labs(
+      x = "(more pro-Black)     IAT Score     (more pro-White)", 
+      y = "Number of Participants", 
+      fill = "Implicit Preference") + 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
