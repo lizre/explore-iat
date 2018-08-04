@@ -153,7 +153,7 @@ customsidebar <-  dashboardSidebar(
     menuItem("Donate to Project Implicit", icon = icon("th"), href = "https://4agc.com/donation_pages/9dda692c-6aa1-47e7-852d-58d396ebd3af")
   )
 )
-
+ 
 body <- dashboardBody(
   tags$style(".content {
                         margin-left:20px;
