@@ -402,11 +402,86 @@ h2("Take an Implicit Association Test (IAT)"),
               status = "primary",
               textOutput(outputId = "sexualitycorr")
 
-          )
-        )
+          ) #this box
+        ) # this column
         ) #fluidRow
+        ), #this tab
+
+      # Age tab content #####
+
+        tabItem(tabName = "Age",
+        fluidRow(
+        column(width = 4,
+        box(title = "What is the Age IAT?", width = NULL, 
+                solidHeader = TRUE, 
+                status = "info", 
+                collapsible = TRUE,
+       "The Implicit Association Test (IAT) measures the strength of associations between 
+        concepts (e.g., old, young) and concepts (e.g., good, bad). A 
+        higher score indicates a greater preference for young people over 
+        gay people.", br
+        (), paste("These plots represent ", length(ageiatdat$Implicit), " people, which is a random
+        sample of 0.8% of people who took the Age IAT between 2007 and 2015. The average 
+        IAT score for this overall sample is ", round(mean(ageiatdat$Implicit, na.rm = TRUE), 
+        digits = 3), " (SD = ", f_num(sd(ageiatdat$Implicit, na.rm = TRUE), digits = 2), ")", " indicating a xxxxx implicit preference for young over old people.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        ),
+         
+        box(title = "Who do you want to see the distribution of Age IAT scores for?", 
+        width = NULL,
+        solidHeader = TRUE, 
+        status = "info", 
+        collapsible = TRUE,
+          selectInput(inputId = "age_page", 
+          label = "Below, choose whether to graph IAT scores by participant age group",
+          choices = c("30 or younger" = "30 or younger", 
+                      "31 - 50" = "31 - 50",
+                      "51 or older" = "51 or older",
+                      "All" = "all"),
+          selected = "all")
+         ),
+       
+
+         box(title = "What demographic factors correlate with scores on the Age IAT?", 
+          width = NULL,
+          solidHeader = TRUE, 
+          status = "info", 
+          collapsible = TRUE,
+            selectInput(inputId = "age_corrvar", 
+            label = "Below, choose a variable to see its correlation with scores on the 
+            Age IAT",
+            choices = c("Participant age in years" = "age", 
+                        "Education" = "education", 
+                        "Political ideology (more negative = more conservative; more positive = more liberal)" = "politics", 
+                        "Explicit preference for young over old" = "Explicit", 
+                        "Year IAT was taken" = "year"), 
+            selected = "age")
+            )
         
-        )
+        ), # this column
+        
+        column(width = 8,
+         
+          box(
+          title = "How do people score on the Age IAT?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              plotOutput(outputId = "agehist", 
+                         height = 330)
+          ),
+          
+          box(
+          title = "Do Age IAT scores correlate with other factors?", 
+              solidHeader = TRUE, 
+              width = NULL, 
+              status = "primary",
+              textOutput(outputId = "agecorr")
+
+          ) #this box
+        ) # this column
+        ) #fluidRow
+        ) #this tab
+
         ) # tabItems
         
 ) # fluidRow 
@@ -530,7 +605,42 @@ server <- function(input, output) {
 
     })
 
-  
+
+# Age correlations -----
+
+# MUST put this scatter/correlation code BEFORE subsetting ggplot/histogram, or histogram will disappear in ui. Maybe subsetting breaks original dataset that scatter/correlation is based on?
+
+  output$agecorr = renderText({
+    df <- (as.data.frame(ageiatdat[, input$age_corrvar])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
+    
+    agecorrtest <- cor.test(ageiatdat$Implicit,df[ , input$age_corrvar], method = "pearson", use = "complete.obs")
+    
+   paste0("There is a ",
+          if (agecorrtest$estimate < .09) {
+            print("negligible")
+          } else if (agecorrtest$estimate > .09 & agecorrtest$estimate < .291) {
+            print("small")
+          } else if (agecorrtest$estimate > .291 & agecorrtest$estimate < .491) {
+            print("medium")
+          } else {
+            print ("large")
+          },
+          " correlation between ",
+           input$age_corrvar, 
+           " and scores on the age IAT, r = ", 
+           f_num(agecorrtest$estimate, digits = 3), #f_num removes leading 0s
+           ", p ",
+          if (agecorrtest$p.value < .001) {
+          print("< .001")
+          } else {
+          print(paste0("= ", round(agecorrtest$p.value, digits = 2)))
+          },
+          "."
+             )
+
+    })
+
+    
 ### Generate reactive output: histograms ------
   
 # Race histogram -----
@@ -606,6 +716,31 @@ output$sexualityhist <- renderPlot({ #Save output to output list using output$, 
   xlim(c(-1.75, 1.75)) + 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
+
+# Age histogram -----
+  
+  df_subset_age <- reactive({
+    if (input$age_page == "all") { 
+        ageiatbypage <- ageiatdat 
+        return(ageiatbypage)
+        } else {
+    ageiatbypage <- filter(ageiatdat, Age_group_3 == input$age_page)
+    return(ageiatbypage)}
+  })
+
+output$agehist <- renderPlot({ #Save output to output list using output$, giving a name to   use in ui. Build output with render().
+  ggplot(data = df_subset_age(), 
+         aes(x = Implicit, fill = Preference)) + 
+  geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
+      theme(text = element_text(size = 20)) +
+      labs(
+      x = "(more pro-old)     IAT Score     (more pro-young)", 
+      y = "Number of Participants", 
+      fill = "Implicit Preference") + 
+  xlim(c(-1.75, 1.75)) + 
+  scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
+})
+
 
 } # server
 
