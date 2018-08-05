@@ -107,8 +107,7 @@ sexualityiatdat$sexuality_dichot <- recode(sexualityiatdat$sexualityall,
           "Asexual" = "Not heterosexual (gay, bisexual, asexual, or questioning",
           "Questioning" = "Not heterosexual (gay, bisexual, asexual, or questioning") 
 
-sexualityiatdat$politics <- as.numeric(sexualityiatdat$politics)
-mean(sexualityiatdat$politics, na.rm=T)
+
 # Import and tidy Age data ------------
 
 ageiatdat <- read_csv(file = "https://github.com/lizredford/explore-iat/raw/master/ageiatdat.csv?raw=true") # transform GitHub url from 'View Raw' hyperlink into data frame
@@ -511,7 +510,7 @@ server <- function(input, output) {
             print("negligible")
           } else if (sexualitycorrtest$estimate > .09 & sexualitycorrtest$estimate < .291) {
             print("small")
-          } else if (sexualitycorrtest$estimate > .291 & v$estimate < .491) {
+          } else if (sexualitycorrtest$estimate > .291 & sexualitycorrtest$estimate < .491) {
             print("medium")
           } else {
             print ("large")
@@ -534,7 +533,7 @@ server <- function(input, output) {
   
 ### Generate reactive output: histograms ------
   
-# Race -----
+# Race histogram -----
   
   df_subset_race <- reactive({
     if (input$race_prace == "all") { 
@@ -559,7 +558,7 @@ output$racehist <- renderPlot({ #Save output to output list using output$, givin
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
 
-# Gender-Science -----
+# Gender-Science histogram -----
 
   df_subset_gendersci <- reactive({
     if (input$gendersci_pgender == "all") { 
@@ -584,7 +583,7 @@ output$genderscihist <- renderPlot({ #Save output to output list using output$, 
   scale_fill_manual(values = c("#c51b8a", "#2c7fb8", "#191970")) 
 })
 
-# Sexuality -----
+# Sexuality histogram -----
   
   df_subset_sexuality <- reactive({
     if (input$sexuality_psexuality == "all") { 
@@ -601,7 +600,7 @@ output$sexualityhist <- renderPlot({ #Save output to output list using output$, 
   geom_histogram(binwidth = .1, na.rm = TRUE, colour = "white") + 
       theme(text = element_text(size = 20)) +
       labs(
-      x = "(more pro-Black)     IAT Score     (more pro-White)", 
+      x = "(more pro-gay)     IAT Score     (more pro-straight)", 
       y = "Number of Participants", 
       fill = "Implicit Preference") + 
   xlim(c(-1.75, 1.75)) + 
