@@ -61,7 +61,7 @@ gendersciiatdat$Association <- cut(gendersciiatdat$implicit,
                "Male--Science \n Association"), 
     right = FALSE)
 
-# Coerce to factors for ggplot
+# Coerce to factors for ggplot 
 gendersciiatdat$sex <- as.factor(gendersciiatdat$sex)
 gendersciiatdat$sex <- recode(gendersciiatdat$sex, 
                       "f" = "Female",
@@ -270,7 +270,7 @@ h2("Take an Implicit Association Test (IAT)"),
                 status = "info", 
                 collapsible = TRUE,
        "The Implicit Association Test (IAT) measures the strength of associations between 
-        concepts (e.g., Women, Men) and concepts (e.g., Science, Liberal Arts).", "A
+        social concepts (e.g., Women, Men) and academic areas (e.g., Science, Liberal Arts).", "A
         higher score indicates a greater association between men and science relative to 
         women and science.", br
         (), paste("These plots represent ", length(gendersciiatdat$implicit), " people, which is a random
@@ -344,7 +344,7 @@ h2("Take an Implicit Association Test (IAT)"),
                 status = "info", 
                 collapsible = TRUE,
        "The Implicit Association Test (IAT) measures the strength of associations between 
-        concepts (e.g., gay, straight) and concepts (e.g., good, bad). A 
+        concepts (e.g., gay, straight) and evaluations (e.g., good, bad). A 
         higher score indicates a greater preference for straight people over 
         gay people.", br
         (), paste("These plots represent ", length(sexualityiatdat$Implicit), " people, which is a random
@@ -417,13 +417,13 @@ h2("Take an Implicit Association Test (IAT)"),
                 status = "info", 
                 collapsible = TRUE,
        "The Implicit Association Test (IAT) measures the strength of associations between 
-        concepts (e.g., old, young) and concepts (e.g., good, bad). A 
+        concepts (e.g., old, young) and evaluations (e.g., good, bad). A 
         higher score indicates a greater preference for young people over 
         gay people.", br
         (), paste("These plots represent ", length(ageiatdat$Implicit), " people, which is a random
         sample of 0.8% of people who took the Age IAT between 2007 and 2015. The average 
         IAT score for this overall sample is ", round(mean(ageiatdat$Implicit, na.rm = TRUE), 
-        digits = 3), " (SD = ", f_num(sd(ageiatdat$Implicit, na.rm = TRUE), digits = 2), ")", " indicating a xxxxx implicit preference for young over old people.", sep = "") # sep = "" to remove paste() automatically adding spaces
+        digits = 3), " (SD = ", f_num(sd(ageiatdat$Implicit, na.rm = TRUE), digits = 2), ")", " indicating a strong implicit preference for young over old people.", sep = "") # sep = "" to remove paste() automatically adding spaces
         ),
          
         box(title = "Who do you want to see the distribution of Age IAT scores for?", 
