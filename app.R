@@ -8,6 +8,29 @@ library(numform)
 library(haven)
 library(dplyr)
 
+# Define function that prints size of correlation coefficients
+correffectsize <- function(corrtestvalue) {
+ if (corrtestvalue < .09) {
+      print("negligible")
+    } else if (corrtestvalue > .09 & corrtestvalue < .291) {
+      print("small")
+    } else if (corrtestvalue > .291 & corrtestvalue < .491) {
+      print("medium")
+    } else {
+      print ("large")
+    } 
+}
+
+# Define function that conditionally prints correlation significance level
+corrsig <- function(corrsigvalue) {
+    if (corrsigvalue < .001) {
+      print("p < .001")
+    } else {
+      print(paste0("p = ", round(corrsigvalue, digits = 3)))
+    }
+}
+
+
 # --- Import and tidy/format data ----------------------------------------------------------
 
 # Import and tidy Race data  ------------
@@ -508,31 +531,19 @@ server <- function(input, output) {
 
   output$racecorr = renderText({
     df <- (as.data.frame(raceiatdat[, input$race_corrvar])) #had to create a new dataframe because original tibble format was not computing correlation. Error: argument no numeric or logical (despite working in console. Not sure why)
-    
+
     racecorrtest <- cor.test(raceiatdat$Implicit,df[ , input$race_corrvar], method = "pearson", use = "complete.obs")
     
    paste0("There is a ",
-          if (racecorrtest$estimate < .09) {
-            print("negligible")
-          } else if (racecorrtest$estimate > .09 & racecorrtest$estimate < .291) {
-            print("small")
-          } else if (racecorrtest$estimate > .291 & racecorrtest$estimate < .491) {
-            print("medium")
-          } else {
-            print ("large")
-          },
+          correffectsize(racecorrtest$estimate),
           " correlation between ",
-           input$race_corrvar, 
-           " and scores on the Race IAT, r = ", 
-           f_num(racecorrtest$estimate, digits = 3), #f_num removes leading 0s
-           ", p ",
-          if (racecorrtest$p.value < .001) {
-          print("< .001")
-          } else {
-          print(paste0("= ", round(racecorrtest$p.value, digits = 2)))
-          },
+          input$race_corrvar, 
+          " and scores on the Race IAT, r = ", 
+          f_num(racecorrtest$estimate, digits = 3), #f_num removes leading 0s
+          ", ",
+          corrsig(racecorrtest$p.value),
           "."
-             )
+          )
 
     })
 
@@ -547,27 +558,15 @@ server <- function(input, output) {
   genderscicorrtest <- cor.test(gendersciiatdat$implicit,df2[ , input$gendersci_corrvar], method = "pearson", use = "complete.obs")
     
     paste0("There is a ",
-          if (genderscicorrtest$estimate < .09) {
-            print("negligible")
-          } else if (genderscicorrtest$estimate > .09 & genderscicorrtest$estimate < .291) {
-            print("small")
-          } else if (genderscicorrtest$estimate > .291 & genderscicorrtest$estimate < .491) {
-            print("medium")
-          } else {
-            print ("large")
-          },
+          correffectsize(genderscicorrtest$estimate),
           " correlation between ",
           input$gendersci_corrvar, 
           " and scores on the Gender-Science IAT, r = ", 
           f_num(genderscicorrtest$estimate, digits = 3), #f_num removes leading 0s
-          ", p ",
-          if (genderscicorrtest$p.value < .001) {
-          print("< .001")
-          } else {
-          print(paste0("= ", round(genderscicorrtest$p.value, digits = 2)))
-          },
+          ", ",
+          corrsig(genderscicorrtest$p.value),
           "."
-               )
+          )
 
     })
 
@@ -581,27 +580,15 @@ server <- function(input, output) {
     sexualitycorrtest <- cor.test(sexualityiatdat$Implicit,df[ , input$sexuality_corrvar], method = "pearson", use = "complete.obs")
     
    paste0("There is a ",
-          if (sexualitycorrtest$estimate < .09) {
-            print("negligible")
-          } else if (sexualitycorrtest$estimate > .09 & sexualitycorrtest$estimate < .291) {
-            print("small")
-          } else if (sexualitycorrtest$estimate > .291 & sexualitycorrtest$estimate < .491) {
-            print("medium")
-          } else {
-            print ("large")
-          },
+          correffectsize(sexualitycorrtest$estimate),
           " correlation between ",
-           input$sexuality_corrvar, 
-           " and scores on the Sexuality IAT, r = ", 
-           f_num(sexualitycorrtest$estimate, digits = 3), #f_num removes leading 0s
-           ", p ",
-          if (sexualitycorrtest$p.value < .001) {
-          print("< .001")
-          } else {
-          print(paste0("= ", round(sexualitycorrtest$p.value, digits = 2)))
-          },
+          input$sexuality_corrvar, 
+          " and scores on the Sexuality IAT, r = ", 
+          f_num(sexualitycorrtest$estimate, digits = 3), #f_num removes leading 0s
+          ", ",
+          corrsig(sexualitycorrtest$p.value),
           "."
-             )
+          )
 
     })
 
@@ -616,27 +603,15 @@ server <- function(input, output) {
     agecorrtest <- cor.test(ageiatdat$Implicit,df[ , input$age_corrvar], method = "pearson", use = "complete.obs")
     
    paste0("There is a ",
-          if (agecorrtest$estimate < .09) {
-            print("negligible")
-          } else if (agecorrtest$estimate > .09 & agecorrtest$estimate < .291) {
-            print("small")
-          } else if (agecorrtest$estimate > .291 & agecorrtest$estimate < .491) {
-            print("medium")
-          } else {
-            print ("large")
-          },
+          correffectsize(agecorrtest$estimate),
           " correlation between ",
-           input$age_corrvar, 
-           " and scores on the age IAT, r = ", 
-           f_num(agecorrtest$estimate, digits = 3), #f_num removes leading 0s
-           ", p ",
-          if (agecorrtest$p.value < .001) {
-          print("< .001")
-          } else {
-          print(paste0("= ", round(agecorrtest$p.value, digits = 2)))
-          },
+          input$age_corrvar, 
+          " and scores on the age IAT, r = ", 
+          f_num(agecorrtest$estimate, digits = 3), #f_num removes leading 0s
+          ", ",
+          corrsig(agecorrtest$p.value),
           "."
-             )
+          )
 
     })
 
