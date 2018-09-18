@@ -2,7 +2,7 @@
 
 <b>About this Shiny dashboard</b>
 
-View the most recently published version of this dashboard <a href = "https://lizredford.shinyapps.io/explore-iat/">here</a>, or view a screenshot here:
+View the most recently published version of this dashboard <a href = "https://pi-liz.shinyapps.io/explore-iat/">here</a>, or view a screenshot here:
 
 <img src="https://github.com/lizredford/explore-iat/raw/master/explore-iat.png" width="850">
 
